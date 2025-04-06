@@ -1,5 +1,4 @@
-// placeholder for OpenAI API integration
-export default async function handler(req, res) {
+ export default async function handler(req, res) {
   const { title, wordCount, language, tone, detail, reference, rubric, paragraph } = req.body;
 
   const content = `
@@ -13,17 +12,28 @@ export default async function handler(req, res) {
 請根據以上需求寫一篇完整文章。
   `;
 
-  const completion = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content }],
-    }),
-  }).then(r => r.json());
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content }],
+      }),
+    });
 
-  res.status(200).json({ result: completion.choices[0].message.content });
+    const completion = await response.json();
+
+    if (!completion.choices || !completion.choices[0]) {
+      return res.status(500).json({ result: '⚠️ 無法從 OpenAI 取得內容，請確認 API Key 或格式是否正確。' });
+    }
+
+    res.status(200).json({ result: completion.choices[0].message.content });
+  } catch (error) {
+    console.error('❌ API Error:', error);
+    res.status(500).json({ result: '❌ 發生錯誤，請稍後再試一次。' });
+  }
 }
