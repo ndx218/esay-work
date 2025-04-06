@@ -1,1 +1,1 @@
-# placeholder for Humanizer API integration
+// placeholder for Humanizer API integration
