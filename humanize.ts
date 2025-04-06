@@ -1,1 +1,0 @@
-# Humanizer API backend logic placeholder
