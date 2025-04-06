@@ -1,1 +1,0 @@
-# EasyWork index.tsx placeholder
