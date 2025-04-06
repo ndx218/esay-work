@@ -1,4 +1,4 @@
- export default async function handler(req, res) {
+export default async function handler(req, res) {
   const { title, wordCount, language, tone, detail, reference, rubric, paragraph } = req.body;
 
   const content = `
@@ -13,27 +13,29 @@
   `;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const completion = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://your-domain.com", // 你可以改成自己的網域名稱
+        "X-Title": "EasyWork Homework Generator"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content }],
-      }),
-    });
-
-    const completion = await response.json();
+        model: "openai/gpt-4o", // 💥 使用 GPT-4o
+        messages: [
+          { role: "user", content }
+        ]
+      })
+    }).then(r => r.json());
 
     if (!completion.choices || !completion.choices[0]) {
-      return res.status(500).json({ result: '⚠️ 無法從 OpenAI 取得內容，請確認 API Key 或格式是否正確。' });
+      return res.status(500).json({ result: '⚠️ GPT-4o 回傳失敗，請確認內容與 API Key。' });
     }
 
     res.status(200).json({ result: completion.choices[0].message.content });
   } catch (error) {
-    console.error('❌ API Error:', error);
-    res.status(500).json({ result: '❌ 發生錯誤，請稍後再試一次。' });
+    console.error("❌ GPT-4o API 錯誤：", error);
+    res.status(500).json({ result: '❌ 系統錯誤，請稍後再試。' });
   }
 }
