@@ -1,1 +1,1 @@
-# placeholder for OpenAI API integration
+// placeholder for OpenAI API integration
