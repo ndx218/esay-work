@@ -1,1 +1,1 @@
-export default function handler(req, res) { res.status(200).json({ message: 'Generate success' }); }
+# placeholder for OpenAI API integration
