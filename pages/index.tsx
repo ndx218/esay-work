@@ -65,3 +65,65 @@ export default function Home() {
     </div>
   );
 }
+// 在 pages/index.tsx 中加入這段程式碼：
+
+import { useState } from "react";
+
+export default function Home() {
+  const [draft, setDraft] = useState("");
+  const [humanized, setHumanized] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleHumanize = async () => {
+    setLoading(true);
+    setHumanized("");
+    try {
+      const response = await fetch("/api/humanize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: draft })
+      });
+      const data = await response.json();
+      setHumanized(data.result);
+    } catch (err) {
+      alert("潤飾失敗，請稍後再試");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h1>📝 EasyWork 功課生成平台</h1>
+
+      <textarea
+        rows={8}
+        style={{ width: "100%", marginBottom: 12 }}
+        placeholder="請輸入要潤飾的草稿內容..."
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+      />
+
+      <button onClick={handleHumanize} disabled={loading}>
+        ✨潤飾草稿
+      </button>
+
+      {loading && <p>⏳ 正在潤飾中...</p>}
+
+      {humanized && (
+        <div style={{ marginTop: 20 }}>
+          <h3>潤飾後內容：</h3>
+          <div
+            style={{
+              border: "1px solid #ccc",
+              padding: 16,
+              borderRadius: 8,
+              background: "#fafafa"
+            }}
+          >
+            {humanized}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
