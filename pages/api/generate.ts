@@ -18,31 +18,24 @@ export default async function handler(req, res) {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://easy-work103.vercel.app", // ✅ 替換為你的網址
+        "HTTP-Referer": "https://easy-work103.vercel.app", // 你的網站網址
         "X-Title": "EasyWork"
       },
       body: JSON.stringify({
         model: "openai/gpt-4o",
+        max_tokens: 1000, // ✅ 限制輸出不超過免費額度
         messages: [{ role: "user", content }]
       })
     });
 
     const completion = await response.json();
 
-    // 🔍 Debug log for Vercel logs
-    console.log("OpenRouter response:", JSON.stringify(completion, null, 2));
-
-    // 🔴 若回傳錯誤，直接顯示完整內容
     if (!completion.choices || !completion.choices[0]) {
-      return res.status(500).json({ result: `❌ GPT-4o 回傳失敗\n${JSON.stringify(completion, null, 2)}` });
+      return res.status(500).json({ result: `⚠️ GPT-4o 回傳失敗\n${JSON.stringify(completion, null, 2)}` });
     }
 
-    // ✅ 回傳成功的草稿內容
     res.status(200).json({ result: completion.choices[0].message.content });
-
   } catch (error) {
-    // 🚨 捕捉到的例外錯誤
-    console.error("Fetch error:", error);
     res.status(500).json({ result: `❌ 系統錯誤：${error.message}` });
   }
 }
