@@ -1,3 +1,4 @@
+// ✅ OpenRouter GPT-3.5 寫法
 export default async function handler(req, res) {
   const { title, wordCount, language, tone, detail, reference, rubric, paragraph } = req.body;
 
@@ -13,15 +14,17 @@ export default async function handler(req, res) {
   `;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://easy-work103.vercel.app",
+        "X-Title": "EasyWork"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        max_tokens: 1000, // 你可以調整這個值，但免費帳戶太高會出錯
+        model: "openai/gpt-3.5-turbo",
+        max_tokens: 1000,
         messages: [{ role: "user", content }]
       })
     });
