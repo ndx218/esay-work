@@ -12,30 +12,37 @@ export default async function handler(req, res) {
 請根據以上需求寫一篇完整文章。
   `;
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "HTTP-Referer": "https://easy-work103.vercel.app",
-      "X-Title": "EasyWork",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "openai/chatgpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: content,
-        },
-      ],
-    }),
-  });
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://easy-work103.vercel.app", // ✅ 替換為你的網址
+        "X-Title": "EasyWork"
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o",
+        messages: [{ role: "user", content }]
+      })
+    });
 
-  const completion = await response.json();
+    const completion = await response.json();
 
-  if (!completion.choices || !completion.choices[0]) {
-    return res.status(500).json({ result: '⚠️ GPT-4o 回傳失敗，請確認內容與 API Key。' });
+    // 🔍 Debug log for Vercel logs
+    console.log("OpenRouter response:", JSON.stringify(completion, null, 2));
+
+    // 🔴 若回傳錯誤，直接顯示完整內容
+    if (!completion.choices || !completion.choices[0]) {
+      return res.status(500).json({ result: `❌ GPT-4o 回傳失敗\n${JSON.stringify(completion, null, 2)}` });
+    }
+
+    // ✅ 回傳成功的草稿內容
+    res.status(200).json({ result: completion.choices[0].message.content });
+
+  } catch (error) {
+    // 🚨 捕捉到的例外錯誤
+    console.error("Fetch error:", error);
+    res.status(500).json({ result: `❌ 系統錯誤：${error.message}` });
   }
-
-  res.status(200).json({ result: completion.choices[0].message.content });
 }
