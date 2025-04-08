@@ -13,26 +13,25 @@ export default async function handler(req, res) {
   `;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://easy-work103.vercel.app",
-        "X-Title": "EasyWork"
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o",
-        max_tokens: 1000,
+        model: "gpt-3.5-turbo",
+        max_tokens: 1000, // 你可以調整這個值，但免費帳戶太高會出錯
         messages: [{ role: "user", content }]
-      }),
+      })
     });
 
     const completion = await response.json();
 
     if (!completion.choices || !completion.choices[0]) {
-      // 顯示完整錯誤回傳（這步最重要）
-      return res.status(500).json({ result: `⚠️ GPT-4o 回傳失敗\n${JSON.stringify(completion, null, 2)}` });
+      return res.status(500).json({
+        result: `⚠️ GPT-3.5 回傳失敗\n${JSON.stringify(completion, null, 2)}`
+      });
     }
 
     res.status(200).json({ result: completion.choices[0].message.content });
