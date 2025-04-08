@@ -18,19 +18,20 @@ export default async function handler(req, res) {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://easy-work103.vercel.app", // 你的網站網址
+        "HTTP-Referer": "https://easy-work103.vercel.app",
         "X-Title": "EasyWork"
       },
       body: JSON.stringify({
         model: "openai/gpt-4o",
-        max_tokens: 1000, // ✅ 限制輸出不超過免費額度
+        max_tokens: 1000,
         messages: [{ role: "user", content }]
-      })
+      }),
     });
 
     const completion = await response.json();
 
     if (!completion.choices || !completion.choices[0]) {
+      // 顯示完整錯誤回傳（這步最重要）
       return res.status(500).json({ result: `⚠️ GPT-4o 回傳失敗\n${JSON.stringify(completion, null, 2)}` });
     }
 
