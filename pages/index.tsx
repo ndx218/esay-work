@@ -39,7 +39,7 @@ export default function Home() {
 
   const handleHumanize = async () => {
     setHLoading(true);
-    const res = await fetch('/api/humanize', {
+    const res = await fetch('/api/Undetectable', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: result })
