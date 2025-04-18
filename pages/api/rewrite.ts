@@ -3,14 +3,16 @@ export default async function handler(req, res) {
   const { text } = req.body;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://easy-work103.vercel.app",
+        "X-Title": "EasyWork"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "openai/gpt-3.5-turbo",
         messages: [
           {
             role: "system",
