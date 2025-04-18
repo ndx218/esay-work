@@ -9,11 +9,10 @@ export default async function handler(req, res) {
 引用方式：${reference}
 評分準則：${rubric}
 段落要求：${paragraph}
-請根據以上需求寫一篇完整文章。
-`;
+請根據以上需求寫一篇完整文章，注意語氣、段落、例子與邏輯清晰。`;
 
   try {
-    // Step 1: 初稿
+    // 📝 Step 1: 初稿撰寫
     const step1Res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -24,19 +23,22 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
-        messages: [{ role: "user", content: basePrompt }],
+        messages: [
+          { role: "system", content: "你是一位資深老師，請根據學生輸入的功課要求，撰寫出完整、具結構的草稿。" },
+          { role: "user", content: basePrompt }
+        ],
         max_tokens: 1500
       })
     });
 
     const step1 = await step1Res.json();
-
     const firstDraft = step1?.choices?.[0]?.message?.content;
+
     if (!firstDraft) {
       return res.status(500).json({ result: "⚠️ GPT 初稿失敗", debug: step1 });
     }
 
-    // Step 2: 自我修訂
+    // 🔁 Step 2: 自我修訂（模擬老師審閱）
     const step2Res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -48,7 +50,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
         messages: [
-          { role: "system", content: "請檢查並修訂以下文章，讓語氣與要求更貼近，避免重複與偏題。" },
+          { role: "system", content: "請扮演老師，審閱以下文章是否符合學生需求。如果不符合請潤飾語氣、補上細節、強化段落邏輯。不要加入評論。" },
           { role: "user", content: firstDraft }
         ],
         max_tokens: 1500
