@@ -60,7 +60,7 @@ export default function Home() {
       <h1>📝 EasyWork 功課生成平台</h1>
       <p>請輸入你的功課要求：</p>
 
-      {["name", "school", "title", "wordCount", "reference", "rubric", "paragraph"].map((name) => (
+      {['name', 'school', 'title', 'wordCount', 'reference', 'rubric', 'paragraph'].map((name) => (
         <input key={name} name={name} placeholder={name} onChange={handleChange} style={{ width: '100%', margin: 4 }} />
       ))}
       <select name="language" onChange={handleChange} style={{ width: '100%', margin: 4 }}>
@@ -72,7 +72,7 @@ export default function Home() {
         <option value="半正式">半正式</option>
         <option value="輕鬆">輕鬆</option>
       </select>
-      <textarea name="detail" placeholder="內容細節" onChange={handleChange} style={{ width: '100%', margin: 4 }} />
+      <textarea name="detail" placeholder="內容細節（例子、理論...）" onChange={handleChange} style={{ width: '100%', margin: 4 }} />
 
       <button onClick={handleGenerate} disabled={loading} style={{ marginTop: 10 }}>
         {loading ? '⏳ 正在生成草稿...' : '✨ 生成草稿'}
