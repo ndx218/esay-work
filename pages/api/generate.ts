@@ -9,10 +9,11 @@ export default async function handler(req, res) {
 引用方式：${reference}
 評分準則：${rubric}
 段落要求：${paragraph}
-請根據以上需求寫一篇完整文章，注意語氣、段落、例子與邏輯清晰。`;
+請根據以上需求寫一篇完整文章。
+`;
 
   try {
-    // 📝 Step 1: 初稿撰寫
+    // Step 1: 初稿生成
     const step1Res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -23,11 +24,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "你是一位資深老師，請根據學生輸入的功課要求，撰寫出完整、具結構的草稿。" },
-          { role: "user", content: basePrompt }
-        ],
-        max_tokens: 1500
+        messages: [{ role: "user", content: basePrompt }],
+        max_tokens: 2000
       })
     });
 
@@ -38,7 +36,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ result: "⚠️ GPT 初稿失敗", debug: step1 });
     }
 
-    // 🔁 Step 2: 自我修訂（模擬老師審閱）
+    // Step 2: 第一次修訂
     const step2Res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -50,19 +48,49 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "openai/gpt-3.5-turbo",
         messages: [
-          { role: "system", content: "請扮演老師，審閱以下文章是否符合學生需求。如果不符合請潤飾語氣、補上細節、強化段落邏輯。不要加入評論。" },
+          {
+            role: "system",
+            content:
+              "你是一位嚴謹的老師，請根據學生的要求與評分準則，檢查以下文章是否有語氣不符、內容不完整、重點遺漏、段落不平衡、論點不清等問題。若有問題請立即重寫該段，讓文章邏輯清楚、內容完整、語氣一致，但請保留原意與結構。不要刪減主題。"
+          },
           { role: "user", content: firstDraft }
         ],
-        max_tokens: 1500
+        max_tokens: 2000
       })
     });
 
     const step2 = await step2Res.json();
-    const revised = step2?.choices?.[0]?.message?.content;
+    const firstRevised = step2?.choices?.[0]?.message?.content;
+
+    // Step 3: 第二次修訂
+    const step3Res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://easy-work103.vercel.app",
+        "X-Title": "EasyWork"
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              "請再次審查下列文章，針對語氣不一致、內容不夠清晰、段落不平衡等問題進行第二次優化修訂。保留重點與結構，提升邏輯與語感。"
+          },
+          { role: "user", content: firstRevised }
+        ],
+        max_tokens: 2000
+      })
+    });
+
+    const step3 = await step3Res.json();
+    const finalDraft = step3?.choices?.[0]?.message?.content || firstRevised;
 
     res.status(200).json({
       step1_draft: firstDraft,
-      step2_revised: revised || "⚠️ 第二輪修訂失敗"
+      step2_revised: finalDraft
     });
   } catch (err) {
     res.status(500).json({ result: `❌ 系統錯誤：${err.message}` });
