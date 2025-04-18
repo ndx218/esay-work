@@ -15,9 +15,11 @@ export default function Home() {
   });
 
   const [result, setResult] = useState('');
-  const [humanized, setHumanized] = useState('');
+  const [undetectable, setUndetectable] = useState('');
+  const [gptRewritten, setGptRewritten] = useState('');
   const [loading, setLoading] = useState(false);
-  const [hLoading, setHLoading] = useState(false);
+  const [uLoading, setULoading] = useState(false);
+  const [gptLoading, setGptLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,7 +28,8 @@ export default function Home() {
   const handleGenerate = async () => {
     setLoading(true);
     setResult('');
-    setHumanized('');
+    setUndetectable('');
+    setGptRewritten('');
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,16 +40,28 @@ export default function Home() {
     setLoading(false);
   };
 
-  const handleHumanize = async () => {
-    setHLoading(true);
+  const handleUndetectable = async () => {
+    setULoading(true);
     const res = await fetch('/api/Undetectable', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: result })
     });
     const data = await res.json();
-    setHumanized(data.result);
-    setHLoading(false);
+    setUndetectable(data.result);
+    setULoading(false);
+  };
+
+  const handleGptRewrite = async () => {
+    setGptLoading(true);
+    const res = await fetch('/api/rewrite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: result })
+    });
+    const data = await res.json();
+    setGptRewritten(data.result);
+    setGptLoading(false);
   };
 
   return (
@@ -83,16 +98,27 @@ export default function Home() {
           <h3>📄 AI 草稿：</h3>
           <pre style={{ background: '#f0f0f0', padding: 10 }}>{result}</pre>
 
-          <button onClick={handleHumanize} disabled={hLoading} style={{ marginTop: 10 }}>
-            {hLoading ? '⏳ 語氣潤飾中...' : '🧠 語感優化'}
+          <button onClick={handleUndetectable} disabled={uLoading} style={{ marginTop: 10, marginRight: 8 }}>
+            {uLoading ? '⏳ Undetectable 優化中...' : '🛡️ Undetectable 優化'}
+          </button>
+
+          <button onClick={handleGptRewrite} disabled={gptLoading} style={{ marginTop: 10 }}>
+            {gptLoading ? '⏳ GPT 降 AI 潤飾中...' : '✏️ GPT 降 AI 潤飾'}
           </button>
         </div>
       )}
 
-      {humanized && (
+      {undetectable && (
         <div style={{ marginTop: 20 }}>
-          <h3>🎯 優化後版本：</h3>
-          <pre style={{ background: '#e8fff2', padding: 10 }}>{humanized}</pre>
+          <h3>🛡️ Undetectable 版本：</h3>
+          <pre style={{ background: '#fef4f4', padding: 10 }}>{undetectable}</pre>
+        </div>
+      )}
+
+      {gptRewritten && (
+        <div style={{ marginTop: 20 }}>
+          <h3>✏️ GPT 降 AI 版本：</h3>
+          <pre style={{ background: '#e8fff2', padding: 10 }}>{gptRewritten}</pre>
         </div>
       )}
     </main>
