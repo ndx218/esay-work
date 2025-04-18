@@ -14,7 +14,7 @@ export default function Home() {
     paragraph: ''
   });
 
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState(null);
   const [humanized, setHumanized] = useState('');
   const [loading, setLoading] = useState(false);
   const [hLoading, setHLoading] = useState(false);
@@ -25,7 +25,7 @@ export default function Home() {
 
   const handleGenerate = async () => {
     setLoading(true);
-    setResult('');
+    setResult(null);
     setHumanized('');
     const res = await fetch('/api/generate', {
       method: 'POST',
@@ -33,28 +33,16 @@ export default function Home() {
       body: JSON.stringify(form)
     });
     const data = await res.json();
-    setResult(data.result);
+    setResult(data);
     setLoading(false);
   };
 
-  const handleUndetectable = async () => {
+  const handleHumanize = async () => {
     setHLoading(true);
-    const res = await fetch('/api/Undetectable', {
+    const res = await fetch('/api/humanize', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: result })
-    });
-    const data = await res.json();
-    setHumanized(data.result);
-    setHLoading(false);
-  };
-
-  const handleRewrite = async () => {
-    setHLoading(true);
-    const res = await fetch('/api/rewrite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: result })
+      body: JSON.stringify({ text: result?.step2_revised || '' })
     });
     const data = await res.json();
     setHumanized(data.result);
@@ -92,26 +80,29 @@ export default function Home() {
         {loading ? '⏳ 正在生成草稿...' : '✨ 生成草稿'}
       </button>
 
-      {result && (
+      {result?.step1_draft && (
         <div style={{ marginTop: 20 }}>
-          <h3>📄 AI 草稿：</h3>
-          <pre style={{ background: '#f0f0f0', padding: 10 }}>{result}</pre>
-          <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(result)} 字</p>
+          <h3>📄 AI 草稿（第一輪）：</h3>
+          <pre style={{ background: '#f0f0f0', padding: 10 }}>{result.step1_draft}</pre>
+          <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(result.step1_draft)} 字</p>
+        </div>
+      )}
 
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={handleUndetectable} disabled={hLoading}>
-              {hLoading ? '⏳ Undetectable 優化中...' : '🛡️ Undetectable 優化'}
-            </button>
-            <button onClick={handleRewrite} disabled={hLoading}>
-              {hLoading ? '⏳ GPT 降 AI 中...' : '🤖 GPT 降 AI'}
-            </button>
-          </div>
+      {result?.step2_revised && (
+        <div style={{ marginTop: 20 }}>
+          <h3>📘 修訂後版本（第二輪）：</h3>
+          <pre style={{ background: '#e8f4ff', padding: 10 }}>{result.step2_revised}</pre>
+          <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(result.step2_revised)} 字</p>
+
+          <button onClick={handleHumanize} disabled={hLoading} style={{ marginTop: 10 }}>
+            {hLoading ? '⏳ 語氣潤飾中...' : '🧠 Humanize 語感優化'}
+          </button>
         </div>
       )}
 
       {humanized && (
         <div style={{ marginTop: 20 }}>
-          <h3>🎯 優化後版本：</h3>
+          <h3>🎯 Humanize 優化版本：</h3>
           <pre style={{ background: '#e8fff2', padding: 10 }}>{humanized}</pre>
           <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(humanized)} 字</p>
         </div>
