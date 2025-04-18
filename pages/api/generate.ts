@@ -1,44 +1,50 @@
-// ✅ OpenRouter GPT-3.5 寫法
-export default async function handler(req, res) {
-  const { title, wordCount, language, tone, detail, reference, rubric, paragraph } = req.body;
+// 第一次請求：產出初稿
+const draftResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://easy-work103.vercel.app",
+    "X-Title": "EasyWork"
+  },
+  body: JSON.stringify({
+    model: "openai/gpt-3.5-turbo",
+    messages: [
+      { role: "user", content }
+    ],
+    max_tokens: 1000
+  })
+});
 
-  const content = `
-題目：${title}
-字數：${wordCount}
-語言：${language}，語氣：${tone}
-內容要求：${detail}
-引用方式：${reference}
-評分準則：${rubric}
-段落要求：${paragraph}
-請根據以上需求寫一篇完整文章。
-  `;
+const draftJson = await draftResponse.json();
+const draft = draftJson.choices?.[0]?.message?.content;
 
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://easy-work103.vercel.app",
-        "X-Title": "EasyWork"
+// 第二次請求：模擬老師審查後重寫
+const reviseResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://easy-work103.vercel.app",
+    "X-Title": "EasyWork"
+  },
+  body: JSON.stringify({
+    model: "openai/gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: "You are a strict teacher. Read the draft carefully. Check if it meets the requirements. Revise it to fix any missing details, incorrect tone, or bad paragraph structure. Keep it concise and focused."
       },
-      body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
-        max_tokens: 1000,
-        messages: [{ role: "user", content }]
-      })
-    });
+      {
+        role: "user",
+        content: draft
+      }
+    ],
+    max_tokens: 1000
+  })
+});
 
-    const completion = await response.json();
+const revisedJson = await reviseResponse.json();
+const revised = revisedJson.choices?.[0]?.message?.content;
 
-    if (!completion.choices || !completion.choices[0]) {
-      return res.status(500).json({
-        result: `⚠️ GPT-3.5 回傳失敗\n${JSON.stringify(completion, null, 2)}`
-      });
-    }
-
-    res.status(200).json({ result: completion.choices[0].message.content });
-  } catch (error) {
-    res.status(500).json({ result: `❌ 系統錯誤：${error.message}` });
-  }
-}
+res.status(200).json({ result: revised });
