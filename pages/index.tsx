@@ -15,11 +15,9 @@ export default function Home() {
   });
 
   const [result, setResult] = useState('');
-  const [undetectable, setUndetectable] = useState('');
-  const [gptRewrite, setGptRewrite] = useState('');
+  const [humanized, setHumanized] = useState('');
   const [loading, setLoading] = useState(false);
-  const [uLoading, setULoading] = useState(false);
-  const [gLoading, setGLoading] = useState(false);
+  const [hLoading, setHLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,8 +26,7 @@ export default function Home() {
   const handleGenerate = async () => {
     setLoading(true);
     setResult('');
-    setUndetectable('');
-    setGptRewrite('');
+    setHumanized('');
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,28 +38,30 @@ export default function Home() {
   };
 
   const handleUndetectable = async () => {
-    setULoading(true);
+    setHLoading(true);
     const res = await fetch('/api/Undetectable', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: result })
     });
     const data = await res.json();
-    setUndetectable(data.result);
-    setULoading(false);
+    setHumanized(data.result);
+    setHLoading(false);
   };
 
-  const handleGPTRewrite = async () => {
-    setGLoading(true);
+  const handleRewrite = async () => {
+    setHLoading(true);
     const res = await fetch('/api/rewrite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: result })
     });
     const data = await res.json();
-    setGptRewrite(data.result);
-    setGLoading(false);
+    setHumanized(data.result);
+    setHLoading(false);
   };
+
+  const wordCount = (text) => text.trim().split(/\s+/).length;
 
   return (
     <main style={{ padding: 24, fontFamily: 'sans-serif', maxWidth: 800, margin: 'auto' }}>
@@ -97,29 +96,24 @@ export default function Home() {
         <div style={{ marginTop: 20 }}>
           <h3>📄 AI 草稿：</h3>
           <pre style={{ background: '#f0f0f0', padding: 10 }}>{result}</pre>
+          <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(result)} 字</p>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: 10 }}>
-            <button onClick={handleUndetectable} disabled={uLoading}>
-              {uLoading ? '⏳ Undetectable 處理中...' : '🧠 Undetectable 優化'}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={handleUndetectable} disabled={hLoading}>
+              {hLoading ? '⏳ Undetectable 優化中...' : '🛡️ Undetectable 優化'}
             </button>
-            <button onClick={handleGPTRewrite} disabled={gLoading}>
-              {gLoading ? '⏳ GPT 降 AI 中...' : '🤖 GPT 降 AI'}
+            <button onClick={handleRewrite} disabled={hLoading}>
+              {hLoading ? '⏳ GPT 降 AI 中...' : '🤖 GPT 降 AI'}
             </button>
           </div>
         </div>
       )}
 
-      {undetectable && (
+      {humanized && (
         <div style={{ marginTop: 20 }}>
-          <h3>🧠 Undetectable 優化後版本：</h3>
-          <pre style={{ background: '#fff6f0', padding: 10 }}>{undetectable}</pre>
-        </div>
-      )}
-
-      {gptRewrite && (
-        <div style={{ marginTop: 20 }}>
-          <h3>🤖 GPT 降 AI 版本：</h3>
-          <pre style={{ background: '#e8fff2', padding: 10 }}>{gptRewrite}</pre>
+          <h3>🎯 優化後版本：</h3>
+          <pre style={{ background: '#e8fff2', padding: 10 }}>{humanized}</pre>
+          <p style={{ fontSize: 14, color: '#888' }}>字數統計：{wordCount(humanized)} 字</p>
         </div>
       )}
     </main>
