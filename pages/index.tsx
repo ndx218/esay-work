@@ -12,7 +12,6 @@ export default function Home() {
   const [humanized, setHumanized] = useState('');
   const [loading, setLoading] = useState(false);
   const [hLoading, setHLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,72 +19,43 @@ export default function Home() {
 
   const handleGenerate = async () => {
     setLoading(true);
-    setResult(''); setRewritten(''); setHumanized(''); setError('');
-
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-
-      if (data.step1_draft) {
-        setResult(data.step1_draft);
-      } else {
-        setResult('❌ 初稿未正確生成');
-      }
-
-      if (data.step2_revised) {
-        setRewritten(data.step2_revised);
-      } else {
-        setRewritten('⚠️ 第二輪修訂失敗');
-      }
-    } catch (err) {
-      console.error('❌ 生成錯誤：', err);
-      setError('❌ 系統錯誤，請稍後再試');
-    } finally {
-      setLoading(false);
-    }
+    setResult(''); setRewritten(''); setHumanized('');
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    });
+    const data = await res.json();
+    setResult(data.step1_draft);
+    setRewritten(data.step2_revised);
+    setLoading(false);
   };
 
   const handleUndetectable = async () => {
     setHLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/Undetectable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: rewritten || result })
-      });
-      const data = await res.json();
-      setHumanized(data.result || '❌ Undetectable 優化失敗');
-    } catch (err) {
-      console.error('❌ Undetectable 錯誤：', err);
-      setError('❌ Undetectable API 錯誤');
-    } finally {
-      setHLoading(false);
-    }
+    const res = await fetch('/api/Undetectable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: rewritten || result })
+    });
+    const data = await res.json();
+    setHumanized(data.result);
+    setHLoading(false);
   };
 
   const handleRewrite = async () => {
     setHLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/rewrite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: rewritten || result })
-      });
-      const data = await res.json();
-      setHumanized(data.result || '❌ GPT 降 AI 失敗');
-    } catch (err) {
-      console.error('❌ GPT Rewrite 錯誤：', err);
-      setError('❌ GPT API 錯誤');
-    } finally {
-      setHLoading(false);
-    }
+    const res = await fetch('/api/rewrite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: rewritten || result })
+    });
+    const data = await res.json();
+    setHumanized(data.result);
+    setHLoading(false);
   };
+
+  const getWordCount = (text) => text.trim().split(/\s+/).length;
 
   return (
     <main style={{ padding: 24, fontFamily: 'sans-serif', maxWidth: 800, margin: 'auto' }}>
@@ -110,13 +80,11 @@ export default function Home() {
         {loading ? '⏳ 正在生成草稿...' : '✨ 生成草稿'}
       </button>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
       {result && (
         <div style={{ marginTop: 20 }}>
           <h3>📄 AI 草稿：</h3>
           <pre style={{ background: '#f0f0f0', padding: 10 }}>{result}</pre>
-          <p>字數統計：{result.length} 字</p>
+          <p>字數統計：{getWordCount(result)} 字</p>
         </div>
       )}
 
@@ -124,7 +92,7 @@ export default function Home() {
         <div style={{ marginTop: 20 }}>
           <h3>📝 第二輪修訂稿：</h3>
           <pre style={{ background: '#fff8e1', padding: 10 }}>{rewritten}</pre>
-          <p>字數統計：{rewritten.length} 字</p>
+          <p>字數統計：{getWordCount(rewritten)} 字</p>
         </div>
       )}
 
@@ -143,6 +111,7 @@ export default function Home() {
         <div style={{ marginTop: 20 }}>
           <h3>🎯 優化後版本：</h3>
           <pre style={{ background: '#e8fff2', padding: 10 }}>{humanized}</pre>
+          <p>字數統計：{getWordCount(humanized)} 字</p>
         </div>
       )}
     </main>
