@@ -86,7 +86,7 @@ export default function EasyWorkUI() {
           <TabsList>
             <TabsTrigger value="step1">📄 AI 草稿</TabsTrigger>
             <TabsTrigger value="step2">✏️ 第二輪修訂稿</TabsTrigger>
-            <TabsTrigger value="final">🎯 優化後版本</TabsTrigger>
+            <TabsTrigger value="final">🌟 優化後版本</TabsTrigger>
           </TabsList>
 
           <TabsContent value="step1">
