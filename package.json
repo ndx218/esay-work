@@ -27,6 +27,7 @@
     "zh-convert": "1.0.1"
   },
   "devDependencies": {
+    "@types/cookie": "^0.6.0",
     "@types/node": "^20.4.2",
     "@types/react": "^18.2.14",
     "@types/react-dom": "18.2.6",
