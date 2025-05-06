@@ -17,18 +17,18 @@
   },
   "homepage": "https://github.com/ndx218/esay-work#readme",
   "dependencies": {
+    "formidable": "^3.5.0",
     "next": "13.4.12",
+    "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-icons": "^4.10.1",
     "tailwindcss": "^3.3.2",
-    "formidable": "^3.5.0",
-    "zh-convert": "1.0.1",
-    "next-auth": "^4.22.1",
-    "react-icons": "^4.10.1"
+    "zh-convert": "1.0.1"
   },
   "devDependencies": {
-    "@types/node": "20.4.2",
-    "@types/react": "18.2.14",
+    "@types/node": "^20.4.2",
+    "@types/react": "^18.2.14",
     "@types/react-dom": "18.2.6",
     "autoprefixer": "^10.4.14",
     "eslint": "8.45.0",
