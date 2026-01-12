@@ -1,0 +1,162 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  phone         String?   @unique
+  credits       Int       @default(0)
+  referredBy    String?
+  referralCode  String?   @unique
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          UserRole  @default(USER)
+
+  accounts      Account[]
+  sessions      Session[]
+  referralsMade Referral[]  @relation("Referrer")
+  referralsGot  Referral[]  @relation("Referee")
+  transactions  Transaction[]
+
+  outlines      Outline[]
+  references    Reference[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String    @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model VerificationCode {
+  phone     String   @id
+  code      String
+  createdAt DateTime @default(now())
+}
+
+model Referral {
+  id         String   @id @default(cuid())
+  referrerId String
+  refereeId  String
+  rewarded   Boolean
+  createdAt  DateTime @default(now())
+
+  referrer   User     @relation("Referrer", fields: [referrerId], references: [id])
+  referee    User     @relation("Referee", fields: [refereeId], references: [id])
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  amount          Int
+  isFirstTopUp    Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  type            String   @default("GENERIC")
+  description     String?
+  performedBy     String?
+  idempotencyKey  String?  @unique
+
+  @@index([userId, createdAt])
+}
+
+model TopUpSubmission {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String
+  referralCode String?
+  imageUrl     String
+  createdAt    DateTime  @default(now())
+}
+
+model Outline {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  content    String     @db.Text
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  references Reference[]
+
+  @@index([userId, createdAt])
+}
+
+model Reference {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  outlineId   String
+  outline     Outline    @relation(fields: [outlineId], references: [id], onDelete: Cascade)
+
+  sectionKey  String
+  title       String
+  url         String
+  doi         String?
+  source      String?
+  authors     String?
+  publishedAt DateTime?
+  type        String     @default("OTHER")
+  summary     String?     @db.Text
+  credibility Int        @default(0)
+
+  // 🔹 新增：AI 幫生成的引用說明（JSON）
+  explain     String?     @db.Text
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId, outlineId, sectionKey])
+  @@index([type, credibility])
+  @@index([doi])
+  @@unique([outlineId, url])
+  @@unique([outlineId, doi])
+}
