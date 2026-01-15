@@ -15,13 +15,13 @@ export default async function handler(
   res: NextApiResponse<ResBody>
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST allowed' });
+    return res.status(405).json({ success: false, error: 'Only POST allowed' });
   }
 
   const { title, doi } = req.body;
 
   if (!title && !doi) {
-    return res.status(400).json({ error: 'Title or DOI is required' });
+    return res.status(400).json({ success: false, error: 'Title or DOI is required' });
   }
 
   try {

@@ -4,7 +4,7 @@ import { callLLM, mapMode, type StepName } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 import { getAuthSession } from '@/lib/auth';
 
-type Ok = { outline: string; outlineId: string };
+type Ok = { outline: string; outlineId?: string; warning?: string };
 type Err = { error: string };
 type ResBody = Ok | Err;
 
@@ -743,7 +743,7 @@ ${planHint ? '\n' + planHint : ''}
     console.warn('[outline:db-warn] 数据库保存失败，但返回生成的大纲内容');
     return res.status(200).json({ 
       outline: finalOutline, 
-      outlineId: null,
+      outlineId: undefined,
       warning: '大綱已生成，但無法保存到資料庫。請檢查資料庫連接。'
     });
   }

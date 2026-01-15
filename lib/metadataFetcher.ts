@@ -57,7 +57,7 @@ export async function fetchMetadata({ title, doi }: { title?: string; doi?: stri
         headers: { "User-Agent": UA } 
       });
       if (r.ok) {
-        const j = await r.json();
+        const j = await r.json() as any;
         const m = j?.message;
         out.title = out.title || (Array.isArray(m?.title) ? m.title[0] : m?.title);
         out.authors = out.authors.length ? out.authors : normalizeAuthorsCrossRef(m);
@@ -78,7 +78,7 @@ export async function fetchMetadata({ title, doi }: { title?: string; doi?: stri
         headers: { "User-Agent": UA } 
       });
       if (r.ok) {
-        const j = await r.json();
+        const j = await r.json() as any;
         const item = j?.message?.items?.[0];
         if (item) {
           out.title = (Array.isArray(item?.title) ? item.title[0] : item?.title) || out.title;
@@ -106,7 +106,7 @@ export async function fetchMetadata({ title, doi }: { title?: string; doi?: stri
     
     const r = await fetch(q, { headers: { "User-Agent": UA } });
     if (r.ok) {
-      const j = await r.json();
+      const j = await r.json() as any;
       const paper = out.doi ? j : (j?.data?.[0] || null);
       if (paper) {
         out.title = out.title || paper.title || null;
@@ -140,7 +140,7 @@ export async function fetchMetadata({ title, doi }: { title?: string; doi?: stri
     
     const r = await fetch(q, { headers: { "User-Agent": UA } });
     if (r.ok) {
-      const j = await r.json();
+      const j = await r.json() as any;
       const work = out.doi ? j : (j?.results?.[0] || null);
       if (work) {
         out.title = out.title || work.display_name || null;

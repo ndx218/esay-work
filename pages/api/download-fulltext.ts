@@ -69,7 +69,7 @@ export default async function handler(
       console.error(`下载PDF失败:`, error);
       return {
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   };
@@ -100,7 +100,7 @@ export default async function handler(
               const saveResult = await downloadAndSavePDF(pdfUrl, referenceId || `ref_${Date.now()}`, title);
               
               // 保存到文献库
-              if (saveResult.success) {
+              if (saveResult.success && saveResult.fileName) {
                 const libraryEntry: SavedReference = {
                   referenceId: referenceId || `ref_${Date.now()}`,
                   title: title || 'Unknown Title',
@@ -110,9 +110,9 @@ export default async function handler(
                   doi: doi,
                   url: url,
                   fileName: saveResult.fileName,
-                  fileUrl: saveResult.fileUrl,
-                  fileSize: saveResult.fileSize,
-                  filePath: saveResult.filePath,
+                  fileUrl: saveResult.fileUrl!,
+                  fileSize: saveResult.fileSize!,
+                  filePath: saveResult.filePath!,
                   verified: true,
                   savedAt: new Date().toISOString(),
                   downloadSource: 'Unpaywall'
@@ -130,7 +130,7 @@ export default async function handler(
                 message: '成功找到开放获取版本并保存到本地文献库',
                 saved: saveResult.success,
                 file: saveResult.success ? {
-                  url: saveResult.fileUrl,
+                  url: saveResult.fileUrl!,
                   name: saveResult.fileName,
                   size: saveResult.fileSize
                 } : null
@@ -164,7 +164,7 @@ export default async function handler(
               const saveResult = await downloadAndSavePDF(paper.openAccessPdf.url, referenceId || `ref_${Date.now()}`, title);
               
               // 保存到文献库
-              if (saveResult.success) {
+              if (saveResult.success && saveResult.fileName) {
                 const libraryEntry: SavedReference = {
                   referenceId: referenceId || `ref_${Date.now()}`,
                   title: paper.title || title || 'Unknown Title',
@@ -174,9 +174,9 @@ export default async function handler(
                   doi: paper.externalIds?.DOI,
                   url: url,
                   fileName: saveResult.fileName,
-                  fileUrl: saveResult.fileUrl,
-                  fileSize: saveResult.fileSize,
-                  filePath: saveResult.filePath,
+                  fileUrl: saveResult.fileUrl!,
+                  fileSize: saveResult.fileSize!,
+                  filePath: saveResult.filePath!,
                   verified: true,
                   savedAt: new Date().toISOString(),
                   downloadSource: 'Semantic Scholar'
@@ -194,7 +194,7 @@ export default async function handler(
                 message: '成功找到开放获取版本并保存到本地文献库',
                 saved: saveResult.success,
                 file: saveResult.success ? {
-                  url: saveResult.fileUrl,
+                  url: saveResult.fileUrl!,
                   name: saveResult.fileName,
                   size: saveResult.fileSize
                 } : null
@@ -227,7 +227,7 @@ export default async function handler(
               const saveResult = await downloadAndSavePDF(paper.downloadUrl, referenceId || `ref_${Date.now()}`, title);
               
               // 保存到文献库
-              if (saveResult.success) {
+              if (saveResult.success && saveResult.fileName) {
                 const libraryEntry: SavedReference = {
                   referenceId: referenceId || `ref_${Date.now()}`,
                   title: paper.title || title || 'Unknown Title',
@@ -237,9 +237,9 @@ export default async function handler(
                   doi: paper.doi,
                   url: url,
                   fileName: saveResult.fileName,
-                  fileUrl: saveResult.fileUrl,
-                  fileSize: saveResult.fileSize,
-                  filePath: saveResult.filePath,
+                  fileUrl: saveResult.fileUrl!,
+                  fileSize: saveResult.fileSize!,
+                  filePath: saveResult.filePath!,
                   verified: true,
                   savedAt: new Date().toISOString(),
                   downloadSource: 'CORE'
@@ -257,7 +257,7 @@ export default async function handler(
                 message: '成功找到开放获取版本并保存到本地文献库',
                 saved: saveResult.success,
                 file: saveResult.success ? {
-                  url: saveResult.fileUrl,
+                  url: saveResult.fileUrl!,
                   name: saveResult.fileName,
                   size: saveResult.fileSize
                 } : null
@@ -283,7 +283,7 @@ export default async function handler(
         const saveResult = await downloadAndSavePDF(pdfUrl, referenceId || `ref_${Date.now()}`, title);
         
         // 保存到文献库
-        if (saveResult.success) {
+        if (saveResult.success && saveResult.fileName) {
           const libraryEntry: SavedReference = {
             referenceId: referenceId || `ref_${Date.now()}`,
             title: title || 'Unknown Title',
@@ -292,9 +292,9 @@ export default async function handler(
             year: new Date().getFullYear(),
             url: url,
             fileName: saveResult.fileName,
-            fileUrl: saveResult.fileUrl,
-            fileSize: saveResult.fileSize,
-            filePath: saveResult.filePath,
+            fileUrl: saveResult.fileUrl!,
+            fileSize: saveResult.fileSize!,
+            filePath: saveResult.filePath!,
             verified: true,
             savedAt: new Date().toISOString(),
             downloadSource: 'arXiv'
@@ -312,7 +312,7 @@ export default async function handler(
           message: '成功找到arXiv全文并保存到本地文献库',
           saved: saveResult.success,
           file: saveResult.success ? {
-            url: saveResult.fileUrl,
+            url: saveResult.fileUrl!,
             name: saveResult.fileName,
             size: saveResult.fileSize
           } : null

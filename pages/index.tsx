@@ -2081,7 +2081,8 @@ Output only the bullet point content, without any labels or numbering.`
     if (type === 'section' && sectionId) {
       // 分段生成：针对单个段落
       const sectionText = draftSections[sectionId];
-      if (!sectionText || !sectionText.trim()) {
+      const sectionTextStr = typeof sectionText === 'string' ? sectionText : (sectionText?.en || sectionText?.zh || '');
+      if (!sectionTextStr || !sectionTextStr.trim()) {
         alert(`請先生成第${sectionId}段的草稿內容`);
         return;
       }
@@ -2268,8 +2269,9 @@ Output only the bullet point content, without any labels or numbering.`
       // 分段生成：针对单个段落
       const draftText = draftSections[sectionId];
       const reviewText = reviewSections[sectionId];
+      const draftTextStr = typeof draftText === 'string' ? draftText : (draftText?.en || draftText?.zh || '');
       
-      if (!draftText || !draftText.trim()) {
+      if (!draftTextStr || !draftTextStr.trim()) {
         alert(`請先生成第${sectionId}段的草稿內容`);
         return;
       }
@@ -2556,8 +2558,10 @@ Output only the bullet point content, without any labels or numbering.`
         .filter(point => {
           const revision = revisionSections[point.id];
           const draft = draftSections[point.id];
-          const hasRevision = revision && (typeof revision === 'string' ? revision.trim() : (revision.en?.trim() || revision.zh?.trim()));
-          const hasDraft = draft && (typeof draft === 'string' ? draft.trim() : (typeof draft === 'object' && draft.en ? (draft.en.trim() || draft.zh?.trim()) : draft.trim()));
+          const revisionStr = typeof revision === 'string' ? revision : (revision?.en || revision?.zh || '');
+          const draftStr = typeof draft === 'string' ? draft : (draft?.en || draft?.zh || '');
+          const hasRevision = revisionStr.trim();
+          const hasDraft = draftStr.trim();
           return hasRevision || hasDraft;
         })
         .map(point => point.id);
@@ -4131,7 +4135,8 @@ ${ref.year ? `年份：${ref.year}` : ''}
     let hasSectionContent = false;
 
     outlinePoints.forEach(point => {
-      const sectionContent = (draftSections[point.id] || '').trim();
+      const sectionValue = draftSections[point.id];
+      const sectionContent = (typeof sectionValue === 'string' ? sectionValue : (sectionValue?.en || sectionValue?.zh || '')).trim();
       if (sectionContent) hasSectionContent = true;
       const header = `${point.id}. ${point.title}${
         point.wordCount ? ` (≈ ${point.wordCount} words)` : ''
@@ -6309,21 +6314,30 @@ ${ref.year ? `年份：${ref.year}` : ''}
                                     if (newContent !== null) {
                                       if (typeof sectionData === 'string') {
                                         // 旧格式转换为新格式
-                                        setDraftSections(prev => ({
-                                          ...prev,
-                                          [point.id]: {
-                                            en: draftLang === 'en' ? newContent : (prev[point.id] || ''),
-                                            zh: draftLang === 'zh' ? newContent : (prev[point.id] || ''),
-                                          }
-                                        }));
+                                        setDraftSections(prev => {
+                                          const prevValue = prev[point.id];
+                                          const prevEn = typeof prevValue === 'string' ? prevValue : (prevValue?.en || '');
+                                          const prevZh = typeof prevValue === 'string' ? prevValue : (prevValue?.zh || '');
+                                          return {
+                                            ...prev,
+                                            [point.id]: {
+                                              en: draftLang === 'en' ? newContent : prevEn,
+                                              zh: draftLang === 'zh' ? newContent : prevZh,
+                                            }
+                                          };
+                                        });
                                       } else {
-                                        setDraftSections(prev => ({
-                                          ...prev,
-                                          [point.id]: {
-                                            ...prev[point.id],
-                                            [draftLang]: newContent
-                                          }
-                                        }));
+                                        setDraftSections(prev => {
+                                          const prevValue = prev[point.id];
+                                          const prevObj = typeof prevValue === 'object' && prevValue ? prevValue : { en: '', zh: '' };
+                                          return {
+                                            ...prev,
+                                            [point.id]: {
+                                              ...prevObj,
+                                              [draftLang]: newContent
+                                            }
+                                          };
+                                        });
                                       }
                                     }
                                   }}
@@ -6348,7 +6362,9 @@ ${ref.year ? `年份：${ref.year}` : ''}
                             <div className="mt-2 flex gap-2">
                               <button
                                 onClick={() => {
-                                  const newContent = prompt('编辑生成的内容:', draftSections[point.id]);
+                                  const currentValue = draftSections[point.id];
+                                  const currentText = typeof currentValue === 'string' ? currentValue : (currentValue?.en || currentValue?.zh || '');
+                                  const newContent = prompt('编辑生成的内容:', currentText);
                                   if (newContent !== null) {
                                     setDraftSections(prev => ({
                                       ...prev,
@@ -6651,21 +6667,27 @@ ${ref.year ? `年份：${ref.year}` : ''}
                                           if (newContent !== null) {
                                             if (typeof sectionRevision === 'string') {
                                               // 旧格式转换为新格式
-                                              setRevisionSections(prev => ({
-                                                ...prev,
-                                                [point.id]: {
-                                                  en: revisionLang === 'en' ? newContent : (prev[point.id] || ''),
-                                                  zh: revisionLang === 'zh' ? newContent : (prev[point.id] || ''),
-                                                }
-                                              }));
+                                              setRevisionSections(prev => {
+                                                const prevValue = prev[point.id] || { en: '', zh: '' };
+                                                return {
+                                                  ...prev,
+                                                  [point.id]: {
+                                                    en: revisionLang === 'en' ? newContent : prevValue.en,
+                                                    zh: revisionLang === 'zh' ? newContent : prevValue.zh,
+                                                  }
+                                                };
+                                              });
                                             } else {
-                                              setRevisionSections(prev => ({
-                                                ...prev,
-                                                [point.id]: {
-                                                  ...prev[point.id],
-                                                  [revisionLang]: newContent
-                                                }
-                                              }));
+                                              setRevisionSections(prev => {
+                                                const prevValue = prev[point.id] || { en: '', zh: '' };
+                                                return {
+                                                  ...prev,
+                                                  [point.id]: {
+                                                    ...prevValue,
+                                                    [revisionLang]: newContent
+                                                  }
+                                                };
+                                              });
                                             }
                                           }
                                         }}

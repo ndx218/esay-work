@@ -49,6 +49,7 @@ export default async function handler(
     sectionRole,          // ✅ 新增：段落角色（'introduction' | 'body' | 'conclusion'）
     spec,                 // ✅ paragraph spec system
     mode = 'free',        // 'gemini' | 'flash' | 'gpt-3.5' | 'free'
+    generateBoth = false, // ✅ 是否同时生成中英文版本
   } = (req.body ?? {}) as Record<string, any>;
 
   // 驗證

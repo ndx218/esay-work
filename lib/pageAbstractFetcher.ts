@@ -9,7 +9,7 @@ function clean(s?: string): string {
   return (s || "").replace(/\s+/g, " ").trim();
 }
 
-function firstNonEmpty(arr: (string | undefined)[]): string | null {
+function firstNonEmpty(arr: (string | undefined | null)[]): string | null {
   // 40字符作为最低门槛
   return arr.find((x) => x && x.trim().length > 40) || null;
 }
@@ -21,8 +21,7 @@ export async function fetchAbstractFromPage(url: string) {
     // 1) 抓取HTML
     const res = await fetch(url, { 
       headers: { "User-Agent": UA },
-      redirect: "follow" as any,
-      timeout: 15000
+      redirect: "follow" as any
     });
     
     const html = await res.text();
